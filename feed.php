@@ -15,41 +15,94 @@
  * @see Response.php
  * @see Choice.php
  */
- 
-require '../inc_0700/config_inc.php'; #provides configuration, pathing, error handling, db credentials
-spl_autoload_register('MyAutoLoader::NamespaceLoader');//required to load SurveySez namespace objects
-$config->metaRobots = 'no index, no follow';#never index survey pages
+
+# '../' works for a sub-folder.  use './' for the root  
+require '../inc_0700/config_inc.php'; #provides configuration, pathing, error handling, db credentials 
 
 # check variable of item passed in - if invalid data, forcibly redirect back to demo_list.php page
 if(isset($_GET['id']) && (int)$_GET['id'] > 0){#proper data must be on querystring
 	 $myID = (int)$_GET['id']; #Convert to integer, will equate to zero if fails
 }else{
-	myRedirect(VIRTUAL_PATH . "surveys/index.php");
+	myRedirect(VIRTUAL_PATH . "news/topic.php");
 }
 
-$mySurvey = new SurveySez\Survey($myID); //MY_Survey extends survey class so methods can be added
-if($mySurvey->isValid)
-{
-	$config->titleTag = "'" . $mySurvey->Title . "' Survey!";
-}else{
-	$config->titleTag = smartTitle(); //use constant 
-}
+# SQL statement
+//$sql = "select MuffinName, MuffinID, Price from test_Muffins";
+$sql = 
+"select feedID, feedName, feedURL from feeds where feedID = $myID";
+
+
+/*THIS IS CODE WE NEED TO INCORPORATE SOMEHOW
+<?
+//read-feed-simpleXML.php
+//our simplest example of consuming an RSS feed
+
+  $request = "https://news.google.com/news/rss/headlines/section/topic/TECHNOLOGY?ned=us&hl=en&gl=US";
+  $response = file_get_contents($request);
+  $xml = simplexml_load_string($response);
+  print '<h1>' . $xml->channel->title . '</h1>';
+  foreach($xml->channel->item as $story)
+  {
+    echo '<a href="' . $story->link . '">' . $story->title . '</a><br />'; 
+    echo '<p>' . $story->description . '</p><br /><br />';
+  }
+?>
+*/
+
+#Fills <title> tag. If left empty will default to $PageTitle in config_inc.php  
+$config->titleTag = 'Feed';
 #END CONFIG AREA ---------------------------------------------------------- 
 
 get_header(); #defaults to theme header or header_inc.php
 ?>
-<h3><?=$mySurvey->Title;?></h3>
+
+<?php 
+'<h3 align="center">Feed</h3>';
+?>
 
 <?php
 
-if($mySurvey->isValid)
-{ #check to see if we have a valid SurveyID
-	echo '<p>' . $mySurvey->Description . '</p>';
-	echo $mySurvey->showQuestions();
-}else{
-	echo "Sorry, no such survey!";	
+#images in this case are from font awesome
+$prev = '<i class="fa fa-chevron-circle-left"></i>';
+$next = '<i class="fa fa-chevron-circle-right"></i>';
+
+# Create instance of new 'pager' class
+$myPager = new Pager(20,'',$prev,$next,'');
+$sql = $myPager->loadSQL($sql);  #load SQL, add offset
+
+# connection comes first in mysqli (improved) function
+$result = mysqli_query(IDB::conn(),$sql) or die(trigger_error(mysqli_error(IDB::conn()), E_USER_ERROR));
+
+if(mysqli_num_rows($result) > 0)
+{#records exist - process
+	if($myPager->showTotal()==1){$itemz = "news";}else{$itemz = "nes";}  //deal with plural
+    
+    echo '<table class="table table-hover">
+              <thead>
+                <tr>
+                  <th scope="col">Feed</th>
+                </tr>
+              </thead>
+              <tbody>';
+    
+	while($row = mysqli_fetch_assoc($result))
+	{# process each row
+        
+        echo '<tr>
+                  <td><a href="' . VIRTUAL_PATH . 'news/topic.php?id=' . (int)$row['feedID'] . '">' . dbOut($row['feedURL']) . '</a></td>
+              </tr>
+            ';
+
+	}
+    
+    echo '</tbody>
+        </table>';
+    
+	echo $myPager->showNAV(); # show paging nav, only if enough records	 
+}else{#no records
+    echo "<div align=center>There are currently no news</div>";	
 }
+@mysqli_free_result($result);
 
 get_footer(); #defaults to theme footer or footer_inc.php
-
-
+?>
