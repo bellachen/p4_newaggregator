@@ -29,6 +29,13 @@ require '../inc_0700/config_inc.php'; #provides configuration, pathing, error ha
 $sql = 
 "select categoryID, categoryName from categories";
 
+# check variable of item passed in - if invalid data, forcibly redirect back to demo_list.php page
+if(isset($_GET['id']) && (int)$_GET['id'] > 0){#proper data must be on querystring
+	 $myID = (int)$_GET['id']; #Convert to integer, will equate to zero if fails
+}else{
+	myRedirect(VIRTUAL_PATH . "news/index.php");
+}
+
 #Fills <title> tag. If left empty will default to $PageTitle in config_inc.php  
 $config->titleTag = 'News';
 
