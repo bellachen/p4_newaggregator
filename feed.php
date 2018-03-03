@@ -31,33 +31,11 @@ if(isset($_GET['id']) && (int)$_GET['id'] > 0){#proper data must be on querystri
 $sql = 
 "select feedID, feedName, feedURL from feeds where feedID = $myID";
 
-
-/*THIS IS CODE WE NEED TO INCORPORATE SOMEHOW
-<?
-//read-feed-simpleXML.php
-//our simplest example of consuming an RSS feed
-
-  $request = "https://news.google.com/news/rss/headlines/section/topic/TECHNOLOGY?ned=us&hl=en&gl=US";
-  $response = file_get_contents($request);
-  $xml = simplexml_load_string($response);
-  print '<h1>' . $xml->channel->title . '</h1>';
-  foreach($xml->channel->item as $story)
-  {
-    echo '<a href="' . $story->link . '">' . $story->title . '</a><br />'; 
-    echo '<p>' . $story->description . '</p><br /><br />';
-  }
-?>
-*/
-
 #Fills <title> tag. If left empty will default to $PageTitle in config_inc.php  
 $config->titleTag = 'Feed';
 #END CONFIG AREA ---------------------------------------------------------- 
 
 get_header(); #defaults to theme header or header_inc.php
-?>
-
-<?php 
-'<h3 align="center">Feed</h3>';
 ?>
 
 <?php
@@ -77,23 +55,22 @@ if(mysqli_num_rows($result) > 0)
 {#records exist - process
 	if($myPager->showTotal()==1){$itemz = "news";}else{$itemz = "nes";}  //deal with plural
     
-    echo '<table class="table table-hover">
-              <thead>
-                <tr>
-                  <th scope="col">Feed</th>
-                </tr>
-              </thead>
-              <tbody>';
-    
 	while($row = mysqli_fetch_assoc($result))
 	{# process each row
-        
-        echo '<tr>
-                  <td><a href="' . VIRTUAL_PATH . 'news/topic.php?id=' . (int)$row['feedID'] . '">' . dbOut($row['feedURL']) . '</a></td>
-              </tr>
-            ';
 
-	}
+        //read-feed-simpleXML.php
+        //our simplest example of consuming an RSS feed
+          $request = $row['feedURL'];
+          $response = file_get_contents($request);
+          $xml = simplexml_load_string($response);
+          print '<h1>' . $xml->channel->title . '</h1>';
+          foreach($xml->channel->item as $story)
+          {
+            echo '<a href="' . $story->link . '">' . $story->title . '</a><br />'; 
+            echo '<p>' . $story->description . '</p><br /><br />';
+          }
+
+            }
     
     echo '</tbody>
         </table>';
