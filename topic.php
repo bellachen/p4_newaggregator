@@ -21,22 +21,20 @@
  * @todo none
  */
 
-#'../' works for a sub-folder.  use './' for the root
-#provides configuration, pathing, error handling, db credentials  
-require '../inc_0700/config_inc.php';  
+# '../' works for a sub-folder.  use './' for the root  
+require '../inc_0700/config_inc.php'; #provides configuration, pathing, error handling, db credentials 
 
-#check variable of item passed in - if invalid data, forcibly redirect back to demo_list.php page
-#proper data must be on querystring
-if(isset($_GET['id']) && (int)$_GET['id'] > 0){ 
-    #Convert to integer, will equate to zero if fails
-	$myID = (int)$_GET['id']; 
+# check variable of item passed in - if invalid data, forcibly redirect back to demo_list.php page
+if(isset($_GET['id']) && (int)$_GET['id'] > 0){#proper data must be on querystring
+	 $myID = (int)$_GET['id']; #Convert to integer, will equate to zero if fails
 }else{
 	myRedirect(VIRTUAL_PATH . "news/index.php");
 }
 
 # SQL statement
 //$sql = "select MuffinName, MuffinID, Price from test_Muffins";
-$sql = "select feedID, feedName from feeds where categoryID = $myID";
+$sql = 
+"select feedID, feedName from feeds where categoryID = $myID";
 
 #Fills <title> tag. If left empty will default to $PageTitle in config_inc.php  
 $config->titleTag = 'Topic';
@@ -78,32 +76,30 @@ $next = '<i class="fa fa-chevron-circle-right"></i>';
 
 # Create instance of new 'pager' class
 $myPager = new Pager(20,'',$prev,$next,'');
-#load SQL, add offset
-$sql = $myPager->loadSQL($sql);  
+$sql = $myPager->loadSQL($sql);  #load SQL, add offset
 
 # connection comes first in mysqli (improved) function
 $result = mysqli_query(IDB::conn(),$sql) or die(trigger_error(mysqli_error(IDB::conn()), E_USER_ERROR));
 
 if(mysqli_num_rows($result) > 0)
-{   
-    #records exist - process
-    //deal with plural
-	if($myPager->showTotal()==1){$itemz = "news";}else{$itemz = "nes";}  
+{#records exist - process
+	if($myPager->showTotal()==1){$itemz = "news";}else{$itemz = "nes";}  //deal with plural
     
     echo '<table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th scope="col">Feeds</th>
-                    </tr>
-                </thead>
+              <thead>
+                <tr>
+                  <th scope="col">Feeds</th>
+                </tr>
+              </thead>
               <tbody>';
     
 	while($row = mysqli_fetch_assoc($result))
-	{
-        # process each row
+	{# process each row
+        
         echo '<tr>
-                    <td><a href="' . VIRTUAL_PATH . 'news/feed.php?id=' . (int)$row['feedID'] . '">' . dbOut($row['feedName']) . '</a></td>
-              </tr>';
+                  <td><a href="' . VIRTUAL_PATH . 'news/feed.php?id=' . (int)$row['feedID'] . '">' . dbOut($row['feedName']) . '</a></td>
+              </tr>
+            ';
 
          //echo '<div align="center"><a href="' . VIRTUAL_PATH . 'surveys/survey_view.php?id=' . (int)$row['SurveyID'] . '">' . dbOut($row['Title']) . '</a>';
          //echo '</div>';
@@ -111,14 +107,12 @@ if(mysqli_num_rows($result) > 0)
     
     echo '</tbody>
         </table>';
-
-    # show paging nav, only if enough records
-	echo $myPager->showNAV(); 	 
-}else{
-    #no records
+    
+	echo $myPager->showNAV(); # show paging nav, only if enough records	 
+}else{#no records
     echo "<div align=center>There are currently no news</div>";	
 }
 @mysqli_free_result($result);
-#defaults to theme footer or footer_inc.php
-get_footer(); 
+
+get_footer(); #defaults to theme footer or footer_inc.php
 ?>
