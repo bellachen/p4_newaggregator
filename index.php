@@ -2,6 +2,7 @@
 /**
  * index.php is the first page of our SurveySez application. It's cased on demp_list_pager.php
  * demo_list_pager.php along with demo_view_pager.php provides a sample web application
+ *
  * The difference between demo_list.php and demo_list_pager.php is the reference to the 
  * Pager class which processes a mysqli SQL statement and spans records across multiple  
  * pages. 
@@ -20,13 +21,14 @@
  * @todo none
  */
 
-#'../' works for a sub-folder.  use './' for the root  
+# '../' works for a sub-folder.  use './' for the root  
 require '../inc_0700/config_inc.php'; #provides configuration, pathing, error handling, db credentials 
  
 
-#SQL statement
+# SQL statement
 //$sql = "select MuffinName, MuffinID, Price from test_Muffins";
-$sql = "select categoryID, categoryName from categories";
+$sql = 
+"select categoryID, categoryName from categories";
 
 #Fills <title> tag. If left empty will default to $PageTitle in config_inc.php  
 $config->titleTag = 'News';
@@ -53,10 +55,8 @@ $config->nav1 = array("page.php"=>"New Page!") + $config->nav1; #add a new page 
 
 # END CONFIG AREA ---------------------------------------------------------- 
 
-#defaults to theme header or header_inc.php
-get_header(); 
+get_header(); #defaults to theme header or header_inc.php
 ?>
-
 <h3 align="center">News</h3>
 
 <?php
@@ -76,40 +76,38 @@ $sql = $myPager->loadSQL($sql);  #load SQL, add offset
 $result = mysqli_query(IDB::conn(),$sql) or die(trigger_error(mysqli_error(IDB::conn()), E_USER_ERROR));
 
 if(mysqli_num_rows($result) > 0)
-{   
-    #records exist - process
+{#records exist - process
 	if($myPager->showTotal()==1){$itemz = "news";}else{$itemz = "nes";}  //deal with plural
     
     echo '<table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th scope="col">Category</th>
-                    </tr>
-                </thead>
-          <tbody>';
+              <thead>
+                <tr>
+                  <th scope="col">Category</th>
+                </tr>
+              </thead>
+              <tbody>';
     
 	while($row = mysqli_fetch_assoc($result))
-	{
-        # process each row
+	{# process each row
+        
         echo '<tr>
                   <td><a href="' . VIRTUAL_PATH . 'news/topic.php?id=' . (int)$row['categoryID'] . '">' . dbOut($row['categoryName']) . '</a></td>
               </tr>
             ';
 
+        
          //echo '<div align="center"><a href="' . VIRTUAL_PATH . 'surveys/survey_view.php?id=' . (int)$row['SurveyID'] . '">' . dbOut($row['Title']) . '</a>';
          //echo '</div>';
 	}
     
     echo '</tbody>
         </table>';
-    # show paging nav, only if enough records
-	echo $myPager->showNAV(); 	 
-}else{
-    #no records
+    
+	echo $myPager->showNAV(); # show paging nav, only if enough records	 
+}else{#no records
     echo "<div align=center>There are currently no news</div>";	
 }
 @mysqli_free_result($result);
 
-#defaults to theme footer or footer_inc.php
-get_footer(); 
+get_footer(); #defaults to theme footer or footer_inc.php
 ?>
